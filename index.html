@@ -9,6 +9,21 @@
 <body>
 <main>
 <p class="brand">Run World</p>
+<div id="note" hidden style="background: var(--card); border-radius: 12px; padding: 16px; margin: 16px 0;"></div>
+<script>
+  // Arriving from the link in a sign-up email: say whether it worked, and drop the sign-in details from the address bar.
+  (function () {
+    var h = new URLSearchParams(location.hash.slice(1));
+    var note = document.getElementById('note');
+    if (h.get('access_token') || h.get('type') === 'signup') {
+      note.innerHTML = '<strong>✅ Your email is confirmed.</strong><br>Open Run World on your phone and sign in.';
+    } else if (h.get('error')) {
+      note.innerHTML = '<strong>This link has expired or was already used.</strong><br>Open Run World and sign in. If it asks you to confirm your email, create the account again to get a new link.';
+    } else return;
+    note.hidden = false;
+    history.replaceState(null, '', location.pathname);
+  })();
+</script>
 <h1>One world. Every stride.</h1>
 <p>Every kilometer you run, outdoors or on the treadmill, moves the whole world forward.</p>
 <ul>

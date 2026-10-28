@@ -19,7 +19,15 @@ jobs:
           URL: ${{ secrets.SUPABASE_URL }}
           KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$URL/rest/v1/rpc/get_world_total" \
+          # tidy the address: no spaces, no slash at the end
+          URL=$(echo "$URL" | tr -d '[:space:]'); URL=${URL%/}; KEY=$(echo "$KEY" | tr -d '[:space:]')
+          if ! echo "$URL" | grep -Eq '^https://[a-z0-9]+\.supabase\.co$'; then
+            echo "SUPABASE_URL should look like https://abcdefghijklmnop.supabase.co (the Project URL, not the dashboard address)."
+            echo "It starts with: $(echo "$URL" | cut -c1-20)..."
+            exit 1
+          fi
+          if [ -z "$KEY" ]; then echo "SUPABASE_ANON_KEY is empty."; exit 1; fi
+          code=$(curl -s -o answer.txt -w "%{http_code}" -X POST "$URL/rest/v1/rpc/get_world_total" \
             -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{}')
-          echo "Supabase answered $code"
+          echo "Supabase answered $code: $(head -c 300 answer.txt)"
           test "$code" = "200"

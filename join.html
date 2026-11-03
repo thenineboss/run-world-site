@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join me on Run World</title>
+<meta property="og:title" content="Join me on Run World">
+<meta property="og:description" content="Run together, race friends anywhere, and every kilometer counts for your country.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .card { background: var(--card); border-radius: 18px; padding: 22px; margin: 18px 0; border: 1px solid var(--line); }
+  .btn { display: block; text-align: center; text-decoration: none; font-weight: 700; border-radius: 14px; padding: 15px 18px; margin: 10px 0; }
+  .primary { background: var(--accent); color: #fff; font-size: 1.1rem; }
+  .store { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+  .code { font: 800 1.6rem/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.15em; color: var(--ink); margin: 6px 0 0; }
+  ol { padding-left: 1.2em; }
+</style>
+</head>
+<body>
+<main>
+<p class="brand">Run World</p>
+<h1 id="title">You're invited</h1>
+<p id="what"></p>
+
+<div class="card">
+  <a class="btn primary" id="open" href="#">Open in Run World</a>
+  <p class="muted" id="hint" style="margin: 6px 0 0; font-size: 0.95rem;"></p>
+</div>
+
+<div class="card">
+  <p id="get" style="margin-top: 0; color: var(--ink); font-weight: 700;"></p>
+  <a class="btn store" href="https://apps.apple.com/app/id6829170731">App Store (iPhone)</a>
+  <a class="btn store" href="https://play.google.com/store/apps/details?id=com.runworlds.app">Google Play (Android)</a>
+  <p class="muted" id="after" style="font-size: 0.95rem;"></p>
+  <div id="codebox" hidden>
+    <p class="muted" id="codelabel" style="margin-bottom: 0; font-size: 0.95rem;"></p>
+    <p class="code" id="code"></p>
+  </div>
+</div>
+</main>
+<script>
+  // An invite shared from the app: join.html?f=<friend code>, g=<group code>, t=<relay code>, r=<race id>, s=<run together id>.
+  // "Open in Run World" hands it to the app (runworld://join?...); without the app, the store buttons and the code.
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var kind = ['f', 'g', 't', 'r', 's'].filter(function (k) { return q.get(k); })[0];
+    var lang = (navigator.language || 'en').slice(0, 2);
+    var EN = { title: "You're invited", open: 'Open in Run World', hint: 'Already have Run World? Tap the button and the invite opens in the app.',
+        get: "Don't have Run World yet? It's free.", after: 'After installing, sign up, then come back and tap this link again.',
+        code: 'Or type this code in the app:', none: 'This invite link is not complete. Ask your friend to send it again.',
+        f: 'A friend wants to run with you. Add them as a friend in one tap.', g: 'Join a running group.', t: 'Join a relay team that passes a baton around the world.',
+        r: 'Join a virtual race. Run it wherever you are.', s: 'Run together, live, wherever you both are.',
+        where: { f: 'Community → Friends → Add a friend', g: 'Community → Groups → Join', t: 'Community → Global relay → Join' } };
+    var t = {
+      zh: { title: '你收到了一个邀请', open: '在 Run World 中打开', hint: '已经安装了 Run World？点按钮，邀请会在应用中打开。',
+        get: '还没有 Run World？免费下载。', after: '安装并注册后，回到这里再点一次这个链接。',
+        code: '或者在应用中输入这个代码：', none: '这个邀请链接不完整。请让朋友重新发送。',
+        f: '有朋友想和你一起跑步。一键加为好友。', g: '加入一个跑团。', t: '加入一支在世界各地传递接力棒的接力队。',
+        r: '加入一场线上比赛，在哪里都能跑。', s: '无论身在何处，一起实时跑步。',
+        where: { f: '社区 → 好友 → 添加好友', g: '社区 → 群组 → 加入', t: '社区 → 全球接力 → 加入' } },
+      es: { title: 'Tienes una invitación', open: 'Abrir en Run World', hint: '¿Ya tienes Run World? Toca el botón y la invitación se abre en la app.',
+        get: '¿Aún no tienes Run World? Es gratis.', after: 'Después de instalarla, regístrate y vuelve a tocar este enlace.',
+        code: 'O escribe este código en la app:', none: 'Este enlace de invitación no está completo. Pide a tu amigo que lo envíe otra vez.',
+        f: 'Un amigo quiere correr contigo. Agrégalo como amigo con un toque.', g: 'Únete a un grupo de corredores.', t: 'Únete a un equipo de relevos que se pasa el testigo por todo el mundo.',
+        r: 'Únete a una carrera virtual. Córrela donde estés.', s: 'Corran juntos, en directo, estén donde estén.',
+        where: { f: 'Comunidad → Amigos → Añadir un amigo', g: 'Comunidad → Grupos → Unirse', t: 'Comunidad → Relevo mundial → Unirse' } }
+    }[lang] || EN;
+    var $ = function (id) { return document.getElementById(id); };
+    $('title').textContent = t.title;
+    $('open').textContent = t.open;
+    $('hint').textContent = t.hint;
+    $('get').textContent = t.get;
+    $('after').textContent = t.after;
+    if (!kind) { $('what').textContent = t.none; $('open').hidden = true; return; }
+    var value = q.get(kind).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+    $('what').textContent = t[kind];
+    $('open').href = 'runworld://join?' + kind + '=' + encodeURIComponent(value);
+    // codes people can type in (friend, group, relay); races and runs together only open from the link
+    if (t.where[kind]) {
+      $('codelabel').textContent = t.code + ' (' + t.where[kind] + ')';
+      $('code').textContent = value.toUpperCase();
+      $('codebox').hidden = false;
+    }
+  })();
+</script>
+</body>
+</html>
